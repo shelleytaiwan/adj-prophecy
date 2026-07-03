@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>擲筊占卜感受</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wood:#2b160f;
+  --wood-2:#1b0d08;
+  --temple-red:#6e1423;
+  --vermilion:#b81d24;
+  --gold:#d4af37;
+  --gold-soft:#e8cf8a;
+  --parchment:#f5e6c8;
+  --ink:#241209;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% -10%, #3a1712 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 100%, #1a0a06 0%, transparent 50%),
+    linear-gradient(180deg, var(--wood-2) 0%, var(--wood) 45%, #170b06 100%);
+  font-family:"Noto Sans TC", sans-serif;
+  color:var(--parchment);
+  padding:28px 14px 60px;
+  position:relative;
+  overflow-x:hidden;
+}
+/* incense smoke */
+.smoke{
+  position:absolute; top:0; left:50%; width:2px; height:140px;
+  background:linear-gradient(180deg, rgba(232,207,138,0) 0%, rgba(232,207,138,.35) 40%, rgba(232,207,138,0) 100%);
+  filter:blur(6px);
+  transform:translateX(-50%);
+  animation:drift 6s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes drift{
+  0%{opacity:.15; transform:translateX(-50%) translateY(0) scaleX(1);}
+  50%{opacity:.5; transform:translateX(-38%) translateY(-60px) scaleX(2.4);}
+  100%{opacity:0; transform:translateX(-20%) translateY(-140px) scaleX(4);}
+}
+.wrap{max-width:640px; margin:0 auto; position:relative; z-index:1;}
+
+/* header */
+header{text-align:center; margin-bottom:30px;}
+.lantern-row{font-size:26px; letter-spacing:22px; opacity:.85; margin-bottom:4px;}
+h1{
+  font-family:"Noto Serif TC", serif;
+  font-weight:900;
+  font-size:clamp(28px,7vw,42px);
+  margin:6px 0 4px;
+  color:var(--gold-soft);
+  text-shadow:0 2px 0 #000, 0 0 22px rgba(212,175,55,.35);
+  letter-spacing:.06em;
+}
+.sub{
+  font-size:13px; letter-spacing:.32em; color:var(--gold);
+  text-transform:uppercase; opacity:.75;
+}
+.divider{
+  width:120px; height:2px; margin:16px auto 0;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* step cards */
+.step{
+  background:linear-gradient(180deg, #3a1e14 0%, #241109 100%);
+  border:1px solid rgba(212,175,55,.35);
+  border-radius:4px;
+  padding:20px 20px 22px;
+  margin-bottom:18px;
+  position:relative;
+  box-shadow:0 10px 26px var(--shadow), inset 0 0 0 1px rgba(0,0,0,.3);
+  transition:opacity .35s ease, filter .35s ease;
+}
+.step::before, .step::after{
+  content:""; position:absolute; width:9px; height:9px; border:1px solid var(--gold); opacity:.6;
+}
+.step::before{top:6px; left:6px; border-right:none; border-bottom:none;}
+.step::after{bottom:6px; right:6px; border-left:none; border-top:none;}
+.step.locked{opacity:.42; filter:grayscale(.5); pointer-events:none;}
+.step-head{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+.step-num{
+  font-family:"Noto Serif TC", serif; font-weight:900; font-size:15px;
+  width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 35% 30%, #e8cf8a, #b8902f 70%, #7a5f1c);
+  color:#2b1608;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  flex-shrink:0;
+}
+.step-title{font-family:"Noto Serif TC", serif; font-weight:700; font-size:24px; color:var(--gold-soft);}
+.step-desc{font-size:15px; color:#d8c5a4; opacity:.8; margin-top:2px;}
+
+.btn{
+  font-family:"Noto Serif TC", serif;
+  font-weight:700;
+  font-size:19px;
+  border:1px solid var(--gold);
+  background:linear-gradient(180deg, var(--vermilion), #7a1018);
+  color:var(--gold-soft);
+  padding:12px 22px;
+  border-radius:3px;
+  cursor:pointer;
+  letter-spacing:.08em;
+  box-shadow:0 4px 0 #4a0c10, 0 8px 14px rgba(0,0,0,.4);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 #4a0c10, 0 4px 8px rgba(0,0,0,.4);}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+.btn.ghost{
+  background:transparent; color:var(--gold-soft); box-shadow:none; border:1px solid rgba(212,175,55,.5);
+}
+
+.chip-grid{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;}
+.chip{
+  border:1px solid rgba(212,175,55,.55);
+  background:rgba(212,175,55,.06);
+  color:var(--parchment);
+  padding:10px 18px;
+  border-radius:22px;
+  font-size:17px;
+  cursor:pointer;
+  transition:background .15s, transform .1s;
+}
+.chip:hover{background:rgba(212,175,55,.22);}
+.chip:active{transform:scale(.96);}
+
+.picked{
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:14px; padding:10px 20px;
+  background:rgba(212,175,55,.12);
+  border:1px solid var(--gold);
+  border-radius:22px;
+  font-family:"Noto Serif TC", serif; font-weight:700; font-size:20px;
+  color:var(--gold-soft);
+}
+.picked .tag{font-size:12px; letter-spacing:.15em; color:#d8c5a4; opacity:.7; font-family:"Noto Sans TC",sans-serif; font-weight:400;}
+
+/* jiaobei toss zone */
+.toss-zone{display:flex; flex-direction:column; align-items:center; gap:18px; margin-top:8px;}
+.coins{display:flex; gap:14px; height:130px; align-items:center; justify-content:center;}
+.coin{width:78px; height:100px; position:relative; transform-origin:center;}
+.coin.a{transform:rotate(-12deg);}
+.coin.b{transform:rotate(184deg);}
+.coin svg{width:100%; height:100%; display:block; filter:drop-shadow(0 5px 8px rgba(0,0,0,.55));}
+.coin.tossing{animation:toss 1.1s cubic-bezier(.34,1.4,.4,1) 1;}
+.coin.tossing.b{animation-delay:.06s;}
+@keyframes toss{
+  0%{transform:translateY(0) rotate(0deg);}
+  30%{transform:translateY(-90px) rotate(340deg);}
+  55%{transform:translateY(-50px) rotate(620deg);}
+  100%{transform:translateY(0) rotate(1080deg);}
+}
+
+.sentence-box{
+  margin-top:18px; padding:20px; border-radius:4px;
+  background:linear-gradient(180deg, rgba(212,175,55,.08), rgba(212,175,55,.02));
+  border:1px dashed rgba(212,175,55,.5);
+  text-align:center;
+  min-height:40px;
+}
+.sentence{
+  font-family:"Noto Serif TC", serif; font-weight:700;
+  font-size:clamp(26px,7.2vw,40px);
+  color:var(--parchment);
+  line-height:1.6;
+}
+.sentence .hl{color:var(--gold-soft);}
+.annot{font-size:15px; color:#c9b489; margin-top:10px; font-style:italic; opacity:.9;}
+
+.result-row{display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; flex-wrap:wrap;}
+.stamp{
+  font-family:"Noto Serif TC", serif; font-weight:900; font-size:30px;
+  width:104px; height:104px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  border:4px solid currentColor; transform:rotate(-6deg);
+  letter-spacing:.1em;
+  writing-mode:vertical-rl;
+  box-shadow:0 0 0 2px rgba(0,0,0,.25) inset;
+  flex-shrink:0;
+}
+.stamp.sheng{color:#ffd75e; text-shadow:0 0 10px rgba(255,215,94,.5);}
+.stamp.xiao{color:#ff9a52; text-shadow:0 0 10px rgba(255,154,82,.5);}
+.stamp.yin{color:#8fa3c9; text-shadow:0 0 10px rgba(143,163,201,.4);}
+.result-comment{max-width:340px; font-size:17px; color:#e6d5ac; text-align:left; line-height:1.6;}
+.result-comment b{color:var(--gold-soft); font-family:"Noto Serif TC",serif; font-size:19px;}
+
+.progress{display:flex; align-items:center; justify-content:center; gap:7px; margin-top:18px; font-size:14px; color:#c9b489;}
+.dot{width:11px; height:11px; border-radius:50%; background:rgba(212,175,55,.25); border:1px solid rgba(212,175,55,.5);}
+.dot.done{background:var(--gold);}
+.dot.sheng-mark{background:#ffd75e; box-shadow:0 0 6px #ffd75e;}
+
+.controls-row{display:flex; justify-content:center; gap:10px; margin-top:18px; flex-wrap:wrap;}
+
+.history{margin-top:6px;}
+.history h3{font-family:"Noto Serif TC",serif; font-size:17px; color:var(--gold); text-align:center; margin:0 0 12px; letter-spacing:.1em;}
+.history-item{
+  display:flex; justify-content:space-between; gap:10px; align-items:center;
+  padding:11px 12px; border-bottom:1px solid rgba(212,175,55,.15);
+  font-size:16px; color:#dcc9a4;
+}
+.history-item .hs{font-family:"Noto Serif TC",serif;}
+.history-item .hr{font-size:13px; padding:3px 10px; border-radius:10px; border:1px solid currentColor; flex-shrink:0;}
+.hr.sheng{color:#ffd75e;} .hr.xiao{color:#ff9a52;} .hr.yin{color:#8fa3c9;}
+
+footer{text-align:center; margin-top:34px; font-size:11px; letter-spacing:.15em; color:rgba(232,207,138,.4);}
+
+@media (prefers-reduced-motion: reduce){
+  .smoke, .coin.tossing{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="smoke" style="left:38%; animation-delay:0s;"></div>
+<div class="smoke" style="left:62%; animation-delay:2s;"></div>
+
+<div class="wrap">
+  <header>
+    <div class="lantern-row">🏮 🏮 🏮</div>
+    <h1>擲筊占卜感受</h1>
+    <div class="divider"></div>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="step" id="step1">
+    <div class="step-head">
+      <div class="step-num">一</div>
+      <div>
+        <div class="step-title">問事</div>
+        <div class="step-desc">選主題</div>
+      </div>
+    </div>
+    <button class="btn" id="btnAsk">🙏 問事</button>
+    <div class="chip-grid" id="catGrid" style="display:none;"></div>
+    <div id="pickedSubject"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step locked" id="step2">
+    <div class="step-head">
+      <div class="step-num">二</div>
+      <div>
+        <div class="step-title">程度</div>
+        <div class="step-desc">表達感受的程度</div>
+      </div>
+    </div>
+    <button class="btn" id="btnLevel">📿 選程度</button>
+    <div class="chip-grid" id="levelGrid" style="display:none;"></div>
+    <div id="pickedLevel"></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step locked" id="step3">
+    <div class="step-head">
+      <div class="step-num">三</div>
+      <div>
+        <div class="step-title">擲筊</div>
+        <div class="step-desc">占卜你的感受</div>
+      </div>
+    </div>
+    <div class="toss-zone">
+      <div class="coins" id="coins">
+        <div class="coin a" id="coinA"></div>
+        <div class="coin b" id="coinB"></div>
+      </div>
+      <button class="btn" id="btnToss">🎲 擲筊</button>
+    </div>
+
+    <div class="sentence-box" id="sentenceBox" style="display:none;">
+      <div class="sentence" id="sentenceText"></div>
+      <div class="annot" id="annotText"></div>
+    </div>
+
+    <div class="result-row" id="resultRow" style="display:none;"></div>
+
+    <div class="progress" id="progress"></div>
+
+    <div class="controls-row" id="controlsRow" style="display:none;">
+      <button class="btn ghost" id="btnAgain">🔁 再擲一次（重選主題）</button>
+      <button class="btn ghost" id="btnSpeak">🔊 再唸一次</button>
+    </div>
+  </div>
+
+  <div class="history" id="historyBox" style="display:none;">
+    <h3>─ 本次紀錄 ─</h3>
+    <div id="historyList"></div>
+  </div>
+
+  <footer>Shelleytaiwan 使用 AI 製作 2026</footer>
+</div>
+
+<script>
+/* ---------------- 資料庫 ---------------- */
+const categories = {
+  "國家": ["中國","台灣","日本","韓國","越南","泰國","印尼","菲律賓","馬來西亞","新加坡","英國","美國","法國","德國","澳洲","加拿大","印度","巴西","南非","埃及"],
+  "人物": ["我","你","他","我們","你們","他們","大家","我爸爸","我媽媽","我哥哥","我妹妹","我的朋友","老師","老闆","先生","小姐","太太","家人","我的同學","我的鄰居","我的男朋友","我的女朋友","我的同事","奶奶","爺爺","總統","川普","校長","她老公","他老婆","我的學生們","主任","台灣人","日本人"],
+  "時間": ["今天","明天","昨天","前天","後天","今天早上","昨天下午","聖誕節","這個星期","下個星期","上個星期","這個月","上個月","今年","明年","去年","最近","等一下","剛剛","一會兒","以前","以後","現在","春天","夏天","秋天","冬天","端午節","新年","跨年"],
+  "地點": ["學校","教室","宿舍","圖書館","超市","車站","機場","醫院","餐廳","咖啡廳","公園","市場","百貨公司","電影院","銀行","郵局","飯店","健身房","辦公室","家裡","廚房","廁所","陽台","公司","超商","便利商店","我家","麥當勞","肯德基","夜市","台北101","東京","北海道"],
+  "活動": ["跑步","游泳","爬山","騎腳踏車環島","開車","坐飛機","學中文","學英文","學外語","煮飯","做菜","打掃","洗衣服","看書","寫作業","滑手機","玩遊戲","看電影","聽音樂","唱歌","跳舞","照相","上網","學習","打字","郊遊","野餐","跑馬拉松","散步","做體操","做瑜伽","健身","泡茶","做家事","吃飯","睡覺","插花","購物","旅行","滑雪","潛水","煮咖啡","泡溫泉","泡澡","健行","攀岩"],
+  "食物": ["麻辣火鍋","珍珠奶茶","牛肉麵","臭豆腐","小籠包","披薩","漢堡","壽司","冰淇淋","蛋糕","巧克力","咖啡","果汁","水果","青菜","海鮮","烤鴨","炒飯","湯","沙拉","甜點","零食","豬血糕","關東煮","刈包","紅茶","綠茶","法國料理","港式點心","韓國料理","泡菜鍋","燒酒雞","粽子","炒麵","大阪燒","日本拉麵","鹽酥雞"],
+  "身體": ["我的頭","我的腳","我的手","我的肚子","我的喉嚨","我的背","我的膝蓋","我的眼睛","我的耳朵","我的心","我的身體","我全身","我的頭髮","我的鼻子","我的肩膀","我的脖子","我的皮膚","我的臉","我的屁股"],
+  "東西": ["這本書","我的手機","這個包包","這雙鞋","這件衣服","這頂帽子","這張桌子","這把椅子","這扇窗戶","這道門","這幅畫","這個杯子","這個盤子","這台電腦","這輛車","這棟房子","這條路","這座橋","那棵樹","梅花","櫻花","這條褲子","那條裙子"],
+  "交通": ["新幹線","高鐵","台灣的公車","京都的公車","地下鐵","船","潛水艇","太空船","熱氣球","無人機","公共自行車","計程車","腳踏車"]
+};
+const catDomain = {"國家":"place","人物":"person","時間":"time","地點":"place","活動":"activity","食物":"taste","身體":"body","東西":"object","交通":"place"};
+
+const adverbs = [
+  {t:"最",type:"prefix"},{t:"更",type:"prefix"},{t:"特別",type:"prefix"},{t:"比較",type:"prefix"},
+  {t:"太～了",type:"wrap_le"},{t:"極了",type:"suffix_jile"},{t:"非常",type:"prefix"},{t:"很",type:"prefix"},
+  {t:"好",type:"prefix"},{t:"有點",type:"prefix",neg:true},{t:"不太",type:"prefix"},{t:"不",type:"prefix"},
+  {t:"挺～的",type:"wrap_de",ch:"挺"},{t:"滿～的",type:"wrap_de",ch:"滿"},{t:"真",type:"prefix"},
+  {t:"超～的",type:"wrap_de",ch:"超"},{t:"十分",type:"prefix"},{t:"相當",type:"prefix"},
+  {t:"一樣",type:"prefix"},{t:"一點也不",type:"prefix",neg:true},{t:"真是",type:"prefix"}
+];
+
+// domain: universal / body / taste / place / object   |  neg: 是否偏負面
+const A = (w,domain,neg,py,jp)=>({w,domain:domain||"universal",neg:!!neg,py:py||"",jp:jp||""});
+const adjectives = [
+  A("忙","universal",true),A("愛","universal"),A("像","universal"),A("冷","universal",true),A("熱","universal",true),
+  A("高","universal"),A("矮","universal",true),A("累","body",true),A("長","universal"),A("短","universal",true),
+  A("好","universal"),A("餓","body",true),A("飽","body"),A("渴","body",true),A("大","universal"),A("小","universal"),
+  A("胖","body"),A("瘦","body"),A("多","universal"),A("少","universal",true),
+  A("難","universal",true),A("容易","universal"),A("簡單","universal"),A("複雜","universal",true,"fùzá","複雑な"),
+  A("清楚","universal"),A("模糊","universal",true,"móhu","曖昧な"),A("安全","universal"),A("危險","universal",true),
+  A("舒服","universal"),A("難受","universal",true),A("健康","universal"),A("不健康","universal",true),
+  A("緊張","universal",true),A("熱鬧","place"),A("冷清","place",true,"lěngqīng","閑散とした"),A("安靜","place"),
+  A("吵雜","place",true,"chǎozá","騒がしい"),A("方便","universal"),A("麻煩","universal",true),
+  A("好吃","taste"),A("難吃","taste",true),A("好喝","taste"),A("難喝","taste",true),
+  A("好看","universal"),A("難看","universal",true),A("好聽","universal"),A("難聽","universal",true),
+  A("漂亮","universal"),A("醜","universal",true),A("美麗","universal"),A("醜陋","universal",true),
+  A("可愛","universal"),A("討厭","universal",true),A("聰明","person"),A("笨","person",true),
+  A("大方","person"),A("小氣","person",true),A("客氣","person"),A("不客氣","person",true),
+  A("熱情","person"),A("冷淡","person",true),A("幽默","person"),A("嚴肅","person",true,"yánsù","厳粛な"),
+  A("輕鬆","universal"),A("認真","person"),A("馬虎","person",true),A("整齊","object"),A("雜亂","object",true,"záluàn","雑然とした"),
+  A("乾淨","object"),A("髒","object",true),A("新鮮","taste"),A("不新鮮","taste",true),
+  A("一般","universal"),A("特別","universal"),A("正常","universal"),A("奇怪","universal",true),
+  A("重要","universal"),A("不重要","universal",true),A("豐富","universal",false,"fēngfù","豊富な"),A("貧乏","universal",true,"pínfá","乏しい"),
+  A("幸福","person"),A("不幸","universal",true,"búxìng","不運な"),A("順利","universal"),A("有名","universal"),
+  A("無名","universal",true,"wúmíng","無名の"),A("外向","person",false,"wàixiàng","外向的な"),A("內向","person",false,"nèixiàng","内向的な"),
+  A("有耐心","person"),A("沒耐心","person",true),A("有營養","taste"),A("沒營養","taste",true),
+  A("貴","universal",true),A("便宜","universal"),A("酸","taste"),A("甜","taste"),A("苦","taste",true),
+  A("辣","taste"),A("鹹","taste"),A("淡","taste"),A("香","taste"),A("臭","taste",true),
+  A("乾","object"),A("濕","object",true),A("軟","object"),A("硬","object"),A("滑","object"),
+  A("澀","taste",true,"sè","渋い"),A("嫩","taste",false,"nèn","柔らかい／若い"),A("老","universal",true),
+  A("燙","taste",true),A("冰","taste"),A("擠","place",true),A("寬敞","place",false,"kuānchang","広々とした"),
+  A("有趣","universal"),A("乏味","universal",true,"fáwèi","つまらない"),A("樂觀","person",false,"lèguān","楽観的な"),
+  A("悲觀","person",true,"bēiguān","悲観的な"),A("積極","person",false,"jījí","積極的な"),A("消極","person",true,"xiāojí","消極的な"),
+  A("主動","person",false,"zhǔdòng","主体的な"),A("被動","person",true,"bèidòng","受動的な"),
+  A("自信","person"),A("自卑","person",true,"zìbēi","自卑感がある"),A("驕傲","person",true),
+  A("謙虛","person",false,"qiānxū","謙虚な"),A("誠實","person"),A("虛偽","person",true,"xūwěi","虚偽の"),
+  A("善良","person"),A("邪惡","person",true,"xié'è","邪悪な"),A("勇敢","person"),A("膽小","person",true,"dǎnxiǎo","臆病な"),
+  A("冷靜","person"),A("衝動","person",true,"chōngdòng","衝動的な"),A("成熟","person"),A("幼稚","person",true,"yòuzhì","幼稚な"),
+  A("細心","person"),A("粗心","person",true,"cūxīn","そそっかしい"),A("勤勞","person",false,"qínláo","勤勉な"),
+  A("懶惰","person",true),A("節儉","person",false,"jiéjiǎn","倹約な"),A("奢侈","person",true,"shēchǐ","贅沢な"),
+  A("開朗","person"),A("憂鬱","person",true,"yōuyù","憂鬱な"),A("害羞","person"),A("溫柔","person",false,"wēnróu","優しい"),
+  A("粗暴","person",true,"cūbào","粗暴な"),A("靈活","person",false,"línghuó","柔軟な"),A("呆板","person",true,"dāibǎn","杓子定規な"),
+  A("敏銳","person",false,"mǐnruì","鋭い"),A("遲鈍","person",true,"chídùn","鈍い"),A("穩重","person",false,"wěnzhòng","落ち着いている"),
+  A("輕浮","person",true,"qīngfú","軽薄な"),A("富裕","universal",false,"fùyù","裕福な"),A("貧窮","universal",true,"pínqióng","貧しい"),
+  A("明確","universal",false,"míngquè","明確な"),A("含糊","universal",true,"hánhu","曖昧な"),
+  A("謹慎","person",false,"jǐnshèn","慎重な"),A("魯莽","person",true,"lǔmǎng","無鉄砲な"),
+  A("果斷","person",false,"guǒduàn","果断な"),A("猶豫","person",true,"yóuyù","躊躇する"),
+  A("沉著","person",false,"chénzhuó","落ち着いた"),A("慌張","person",true,"huāngzhāng","慌てた"),
+  A("頑強","person",false,"wánqiáng","頑強な"),A("脆弱","universal",true,"cuìruò","脆弱な"),
+  A("勤奮","person",false,"qínfèn","勤勉な"),A("坦率","person",false,"tǎnshuài","率直な"),
+  A("含蓄","person",false,"hánxù","控えめな"),A("敏捷","body",false,"mǐnjié","敏捷な"),
+  A("精明","person",false,"jīngmíng","抜け目ない"),A("糊塗","person",true,"hútu","ぼんやりした"),
+  A("寬容","person",false,"kuānróng","寛容な"),A("苛刻","person",true,"kēkè","苛酷な"),
+  A("熱衷","person"),A("冷漠","person",true,"lěngmò","冷淡な"),A("Q彈","taste"),A("重","object"),
+  A("清淡","taste",false,"qīngdàn","あっさりした"),A("濃郁","taste",false,"nóngyù","濃厚な"),
+  A("細膩","object",false,"xìnì","きめ細かい"),A("粗糙","object",true,"cūcāo","粗い"),
+  A("穩固","object",false,"wěngù","堅固な"),A("鬆垮","object",true,"sōngkuǎ","ゆるんだ"),
+  A("充沛","body",false,"chōngpèi","旺盛な"),A("匱乏","universal",true,"kuìfá","欠乏している"),
+  A("繁華","place",false,"fánhuá","繁華な"),A("荒涼","place",true,"huāngliáng","荒涼とした"),
+  A("鎮定","person",false,"zhèndìng","落ち着いている"),A("慌亂","person",true,"huāngluàn","慌てふためく"),
+  A("理智","person",false,"lǐzhì","理性的な"),A("友善","person",false,"yǒushàn","友好的な"),
+  A("好客","person",false,"hàokè","もてなし好きな"),A("溫和","person",false,"wēnhé","穏やかな"),
+  A("劇烈","universal",true,"jùliè","激しい"),A("平坦","place",false,"píngtǎn","平坦な"),
+  A("崎嶇","place",true,"qíqū","でこぼこの"),A("痛","body",true),A("性感","person"),
+  // 以下為講義補充詞彙
+  A("不一樣","universal"),A("棒","universal"),A("久","universal"),A("新","universal"),A("舊","universal"),
+  A("快","universal"),A("慢","universal",true),A("好玩","universal"),A("早","universal"),A("晚","universal",true),
+  A("酷","person"),A("輕","object"),A("遠","place",true),A("近","place"),A("帥","person"),
+  A("深","object"),A("細","object"),A("淺","object"),A("疼","body",true),A("厚","object"),A("薄","object"),
+  A("愉快","person"),A("亮","object"),A("高興","person"),A("暗","object",true),A("難過","person",true),
+  A("隨便","universal"),A("合適","universal"),A("突然","universal"),A("明白","universal"),A("生氣","person",true),
+  A("嚴格","person"),A("興奮","person"),A("開心","person"),A("普通","universal"),
+  A("美味","taste",false,"měiwèi","美味しい"),A("生動","universal",false,"shēngdòng","生き生きとした"),
+  A("有意思","universal"),A("沒意思","universal",true),A("精彩","universal",false,"jīngcǎi","見事な"),
+  A("吵鬧","place",true),A("清新","place",false,"qīngxīn","清々しい"),A("齊全","object",false,"qíquán","揃っている"),
+  A("優美","place",false,"yōuměi","優美な"),A("有用","universal"),A("沒用","universal",true)
+];
+
+/* ---------------- 狀態 ---------------- */
+let state = {
+  category:null, subject:null, adverbToken:null,
+  usedInCat:{}, usedAdj:[],
+  block:0, blockSheng:0,
+  history:[]
+};
+Object.keys(categories).forEach(c=>state.usedInCat[c]=[]);
+
+function drawFromPool(pool, usedArr){
+  let avail = pool.filter(x=>!usedArr.includes(x));
+  if(avail.length===0){ usedArr.length=0; avail = pool.slice(); }
+  const pick = avail[Math.floor(Math.random()*avail.length)];
+  usedArr.push(pick);
+  return pick;
+}
+
+/* ---------------- STEP 1: 問事 ---------------- */
+const btnAsk = document.getElementById('btnAsk');
+const catGrid = document.getElementById('catGrid');
+const pickedSubject = document.getElementById('pickedSubject');
+const step2 = document.getElementById('step2');
+
+Object.keys(categories).forEach(cat=>{
+  const chip = document.createElement('div');
+  chip.className='chip'; chip.textContent=cat;
+  chip.onclick=()=>chooseCategory(cat);
+  catGrid.appendChild(chip);
+});
+
+btnAsk.onclick=()=>{ catGrid.style.display = catGrid.style.display==='none' ? 'flex':'none'; };
+
+function chooseCategory(cat){
+  state.category = cat;
+  state.subject = drawFromPool(categories[cat], state.usedInCat[cat]);
+  catGrid.style.display='none';
+  pickedSubject.innerHTML = `<div class="picked">🎋 ${state.subject}<span class="tag">來自「${cat}」</span></div>`;
+  step2.classList.remove('locked');
+  resetStep3UIForNewSubject();
+}
+
+/* ---------------- STEP 2: 程度 ---------------- */
+const btnLevel = document.getElementById('btnLevel');
+const levelGrid = document.getElementById('levelGrid');
+const pickedLevel = document.getElementById('pickedLevel');
+const step3 = document.getElementById('step3');
+
+adverbs.forEach(av=>{
+  const chip = document.createElement('div');
+  chip.className='chip'; chip.textContent=av.t;
+  chip.onclick=()=>chooseAdverb(av);
+  levelGrid.appendChild(chip);
+});
+btnLevel.onclick=()=>{ levelGrid.style.display = levelGrid.style.display==='none' ? 'flex':'none'; };
+
+function chooseAdverb(av){
+  state.adverbToken = av;
+  levelGrid.style.display='none';
+  pickedLevel.innerHTML = `<div class="picked">📿 ${av.t}</div>`;
+  step3.classList.remove('locked');
+}
+
+/* ---------------- STEP 3: 擲筊 ---------------- */
+const btnToss = document.getElementById('btnToss');
+const coinA = document.getElementById('coinA');
+const coinB = document.getElementById('coinB');
+const sentenceBox = document.getElementById('sentenceBox');
+const sentenceText = document.getElementById('sentenceText');
+const annotText = document.getElementById('annotText');
+const resultRow = document.getElementById('resultRow');
+const progress = document.getElementById('progress');
+const controlsRow = document.getElementById('controlsRow');
+const btnAgain = document.getElementById('btnAgain');
+const btnSpeak = document.getElementById('btnSpeak');
+const historyBox = document.getElementById('historyBox');
+const historyList = document.getElementById('historyList');
+
+const coinSVG = `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+<path d="M40 4 C76 14 76 86 40 96 C50 70 50 30 40 4 Z" fill="#7c1420" stroke="#3a0a0f" stroke-width="2"/>
+<path d="M40 4 C76 14 76 86 40 96 C50 70 50 30 40 4 Z" fill="url(#g)" opacity="0.65"/>
+<defs><radialGradient id="g" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#ffd7a3"/><stop offset="50%" stop-color="#c1362f"/><stop offset="100%" stop-color="#5c0e12"/></radialGradient></defs>
+</svg>`;
+coinA.innerHTML = coinSVG;
+coinB.innerHTML = coinSVG;
+
+function buildSentence(subject, av, adj){
+  let core, spokenAdjPart = adj.w;
+  switch(av.type){
+    case 'wrap_le': core = `${subject}太${adj.w}了`; break;
+    case 'suffix_jile': core = `${subject}${adj.w}極了`; break;
+    case 'wrap_de': core = `${subject}${av.ch}${adj.w}的`; break;
+    default: core = `${subject}${av.t}${adj.w}`; break;
+  }
+  return core;
+}
+
+function scoreMatch(cat, adj){
+  const cd = catDomain[cat];
+  if(adj.domain==='universal') return 2.2;
+  if(adj.domain===cd) return 3;
+  if(cat==='人物' && adj.domain==='body') return 2.4;
+  if(cat==='活動' && (adj.domain==='body'||adj.domain==='place')) return 1.5;
+  if(cat==='身體' && adj.domain==='person') return 1.2;
+  return 0.4;
+}
+
+function rollOutcome(score, forcesSheng){
+  if(forcesSheng) return 'sheng';
+  let table;
+  if(score>=3) table=[.68,.27,.05];
+  else if(score>=2) table=[.48,.36,.16];
+  else if(score>=1) table=[.20,.45,.35];
+  else table=[.06,.34,.60];
+  const r = Math.random();
+  if(r<table[0]) return 'sheng';
+  if(r<table[0]+table[1]) return 'xiao';
+  return 'yin';
+}
+
+const outcomeMeta = {
+  sheng:{label:'聖\n杯', cls:'sheng', title:'聖杯', desc:'完美的句子，語法語意剛剛好！'},
+  xiao:{label:'笑\n杯', cls:'xiao', title:'笑杯', desc:'超好笑、超幽默的句子——神明也被逗笑了！'},
+  yin:{label:'陰\n杯', cls:'yin', title:'陰杯', desc:'嗯……這句話怪怪的，語意不太成立，再擲一次吧。'}
+};
+
+function speakSlow(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW';
+  u.rate = 0.62;
+  u.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(v=>v.lang==='zh-TW') || voices.find(v=>v.lang && v.lang.startsWith('zh'));
+  if(v) u.voice = v;
+  window.speechSynthesis.speak(u);
+}
+let lastSpokenText = '';
+
+function renderProgress(){
+  progress.innerHTML = '';
+  const total = 5;
+  const label = document.createElement('span');
+  label.textContent = `本輪擲筊 ${state.block}/${total}　`;
+  progress.appendChild(label);
+  for(let i=0;i<total;i++){
+    const d = document.createElement('span');
+    d.className='dot' + (i<state.block?' done':'');
+    progress.appendChild(d);
+  }
+}
+renderProgress();
+
+btnToss.onclick=()=>{
+  btnToss.disabled = true;
+  coinA.classList.add('tossing','a');
+  coinB.classList.add('tossing','b');
+  sentenceBox.style.display='none';
+  resultRow.style.display='none';
+  controlsRow.style.display='none';
+
+  setTimeout(()=>{
+    coinA.classList.remove('tossing');
+    coinB.classList.remove('tossing');
+
+    // 選形容詞
+    let pool = adjectives;
+    if(state.adverbToken.neg) pool = adjectives.filter(a=>a.neg);
+    const adj = drawFromPool(pool.map(a=>a.w), state.usedAdj);
+    const adjObj = adjectives.find(a=>a.w===adj);
+
+    const sentence = buildSentence(state.subject, state.adverbToken, adjObj);
+
+    // 擲筊結果
+    const score = scoreMatch(state.category, adjObj);
+    state.block++;
+    const mustSheng = (state.block>=5 && state.blockSheng===0);
+    const outcome = rollOutcome(score, mustSheng);
+    if(outcome==='sheng') state.blockSheng++;
+    if(state.block>=5){ state.block=0; state.blockSheng=0; }
+
+    // 顯示句子
+    sentenceText.innerHTML = sentence.replace(adjObj.w, `<span class="hl">${adjObj.w}</span>`);
+    let annot = '';
+    if(adjObj.py) annot = `本句形容詞：${adjObj.w}　${adjObj.py}（${adjObj.jp}）`;
+    annotText.textContent = annot;
+    sentenceBox.style.display='block';
+
+    lastSpokenText = sentence;
+    speakSlow(sentence);
+
+    // 顯示結果（延遲讓念白先進行）
+    setTimeout(()=>{
+      const meta = outcomeMeta[outcome];
+      resultRow.innerHTML = `
+        <div class="stamp ${meta.cls}">${meta.title}</div>
+        <div class="result-comment"><b>${meta.title}</b><br>${meta.desc}</div>
+      `;
+      resultRow.style.display='flex';
+      controlsRow.style.display='flex';
+      renderProgress();
+
+      state.history.unshift({s:sentence, r:meta.cls, label:meta.title});
+      historyBox.style.display='block';
+      historyList.innerHTML = state.history.slice(0,8).map(h=>
+        `<div class="history-item"><span class="hs">${h.s}</span><span class="hr ${h.r}">${h.label}</span></div>`
+      ).join('');
+
+      btnToss.disabled = false;
+    }, 700);
+
+  }, 1150);
+};
+
+btnSpeak.onclick=()=>{ if(lastSpokenText) speakSlow(lastSpokenText); };
+
+btnAgain.onclick=()=>{
+  state.category=null; state.subject=null; state.adverbToken=null;
+  pickedSubject.innerHTML=''; pickedLevel.innerHTML='';
+  step2.classList.add('locked'); step3.classList.add('locked');
+  sentenceBox.style.display='none'; resultRow.style.display='none'; controlsRow.style.display='none';
+};
+
+function resetStep3UIForNewSubject(){
+  step3.classList.add('locked');
+  pickedLevel.innerHTML='';
+  sentenceBox.style.display='none';
+  resultRow.style.display='none';
+  controlsRow.style.display='none';
+}
+
+// preload voices for speechSynthesis
+if('speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged = ()=>{ window.speechSynthesis.getVoices(); };
+}
+</script>
+</body>
+</html>
